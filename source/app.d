@@ -6,7 +6,7 @@ import dyaml;
 import pastemyst;
 
 private string CONFIG_PATH = "~/.config/pastry/config.yml";
-private const string CONFIG_TEMPLATE = "token: \n";
+private const string CONFIG_TEMPLATE = "token: \nno-ext: \n";
 
 public void main(string[] args)
 {
@@ -18,6 +18,7 @@ public void main(string[] args)
     string overrideLang = "";
     string token = "";
     bool isPrivate = false;
+    string noExt = "";
 
     auto helpInfo = getopt(
         args,
@@ -29,6 +30,8 @@ public void main(string[] args)
             "pastes and pastes that show on your pastemyst profile. you can get the token on your pastemyst " ~
             "profile settings page. the token is saved in plaintext in $HOME/.config/pastry/config.yml", &token,
         "private|p", "make a private paste, you have to set the token first", &isPrivate,
+        "set-no-extension", "sets which lang to use when a file doesnt have an extension, you can provide any " ~
+            "supported language or \"autodetect\"", &noExt
     );
 
     if (helpInfo.helpWanted)
@@ -40,12 +43,12 @@ public void main(string[] args)
 
     if (token != "")
     {
-        saveToken(token);
+        yamlSet("token", token);
         return;
     }
     else
     {
-        token = getToken();
+        token = yamlGet("token");
     }
 
     if (overrideLang != "")
@@ -63,6 +66,21 @@ public void main(string[] args)
         // todo: return error status code
         writeln("cant create a private paste without setting the token. set the token with --set-token");
         return;
+    }
+
+    if (noExt != "")
+    {
+        yamlSet("no-ext", noExt);
+        return;
+    }
+    else
+    {
+        noExt = yamlGet("no-ext");
+
+        if (noExt == "")
+        {
+            noExt = "plain text";
+        }
     }
 
     PastyCreateInfo[] pasties;
@@ -84,7 +102,7 @@ public void main(string[] args)
             }
             else
             {
-                lang = "plain text";
+                lang = noExt;
             }
         }
         else
@@ -102,7 +120,7 @@ public void main(string[] args)
     writeln("https://paste.myst.rs/" ~ res.id);
 }
 
-private void saveToken(string token)
+private void yamlSet(string key, string val)
 {
     if (!exists(CONFIG_PATH))
     {
@@ -112,14 +130,12 @@ private void saveToken(string token)
 
     Node root = Loader.fromFile(CONFIG_PATH).load();
 
-    root["token"] = token;
+    root[key] = val;
 
     dumper().dump(File(CONFIG_PATH, "w").lockingTextWriter, root);
-
-    writeln("saved token");
 }
 
-private string getToken()
+private string yamlGet(string key)
 {
     if (!exists(CONFIG_PATH))
     {
@@ -128,5 +144,7 @@ private string getToken()
 
     Node root = Loader.fromFile(CONFIG_PATH).load();
 
-    return root["token"].as!string();
+    string res = root[key].as!string();
+
+    return res == "null" ? "" : res;
 }
