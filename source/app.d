@@ -6,6 +6,20 @@ import pastemyst;
 
 void main(string[] args)
 {
+    string title = "";
+
+    auto helpInfo = getopt(
+        args,
+        "title|t", "title of the paste", &title
+    );
+
+    if (helpInfo.helpWanted)
+    {
+        defaultGetoptPrinter("pastry - create pastes from the commandline - https://paste.myst.rs/\n",
+                helpInfo.options);
+        return;
+    }
+
     PastyCreateInfo[] pasties;
 
     foreach (arg; args[1..$])
@@ -29,7 +43,7 @@ void main(string[] args)
         pasties ~= PastyCreateInfo(baseName(filePath), lang, contents);
     }
 
-    const createInfo = PasteCreateInfo("", ExpiresIn.never, false, false, "", pasties);
+    const createInfo = PasteCreateInfo(title, ExpiresIn.never, false, false, "", pasties);
 
     const res = createPaste(createInfo);
 
