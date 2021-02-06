@@ -2,23 +2,28 @@ import std.stdio;
 import std.getopt;
 import std.file;
 import std.path;
+import core.thread;
 import dyaml;
 import pastemyst;
 
 private string CONFIG_PATH = "~/.config/pastry/config.yml";
 private const string CONFIG_TEMPLATE = "token: \nno-ext: \n";
 
+string title = "";
+ExpiresIn expires = ExpiresIn.never;
+string overrideLang = "";
+string token = "";
+bool isPrivate = false;
+string noExt = "";
+
+PastyCreateInfo[] pasties;
+
+string[string] langCache;
+
 public void main(string[] args)
 {
     // todo: windows
     CONFIG_PATH = expandTilde(CONFIG_PATH);
-
-    string title = "";
-    ExpiresIn expires = ExpiresIn.never;
-    string overrideLang = "";
-    string token = "";
-    bool isPrivate = false;
-    string noExt = "";
 
     auto helpInfo = getopt(
         args,
@@ -83,34 +88,16 @@ public void main(string[] args)
         }
     }
 
-    PastyCreateInfo[] pasties;
-
     foreach (arg; args[1..$])
     {
-        string filePath = arg;
-
-        string contents = readText(filePath);
-        string ext = extension(filePath);
-
-        string lang;
-
-        if (overrideLang == "")
+        if (isDir(arg))
         {
-            if (ext.length > 1)
-            {
-                lang = getLanguageByExtension(ext[1..$]).get().name;
-            }
-            else
-            {
-                lang = noExt;
-            }
+            uploadDir(arg);
         }
         else
         {
-            lang = overrideLang;
+            uploadFile(arg);
         }
-
-        pasties ~= PastyCreateInfo(baseName(filePath), lang, contents);
     }
 
     const createInfo = PasteCreateInfo(title, expires, isPrivate, false, "", pasties);
@@ -118,6 +105,65 @@ public void main(string[] args)
     const res = createPaste(createInfo, token);
 
     writeln("https://paste.myst.rs/" ~ res.id);
+}
+
+private void uploadDir(string path)
+{
+    foreach (string entry; dirEntries(path, SpanMode.shallow))
+    {
+        if (isDir(entry))
+        {
+            uploadDir(entry);
+        }
+        else
+        {
+            uploadFile(entry);
+        }
+    }
+}
+
+private void uploadFile(string path)
+{
+    string contents = readText(path);
+    string ext = extension(path);
+
+    string lang;
+
+    if (overrideLang == "")
+    {
+        if (ext.length > 1)
+        {
+            if (ext[1..$] in langCache)
+            {
+                lang = langCache[ext[1..$]];
+            }
+            else
+            {
+                auto searchedLang = getLanguageByExtension(ext[1..$]);
+                if (searchedLang.isNull)
+                {
+                    lang = "plain text";
+                }
+                else
+                {
+                    lang = searchedLang.get().name;
+                    langCache[ext[1..$]] = lang;
+                }
+                // sleep for 200ms to not hit rate limit
+                Thread.sleep(dur!("msecs")(200));
+            }
+        }
+        else
+        {
+            lang = noExt;
+        }
+    }
+    else
+    {
+        lang = overrideLang;
+    }
+
+    pasties ~= PastyCreateInfo(baseName(path), lang, contents);
 }
 
 private void yamlSet(string key, string val)
