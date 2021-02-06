@@ -8,12 +8,14 @@ void main(string[] args)
 {
     string title = "";
     ExpiresIn expires = ExpiresIn.never;
+    string overrideLang = "";
 
     auto helpInfo = getopt(
         args,
         "title|t", "title of the paste", &title,
         "expires|e","when the paste expires, possible options: " ~
-            "never, oneHour, twoHours, tenHours, oneDay, twoDays, oneWeek, oneMonth, oneYear", &expires
+            "never, oneHour, twoHours, tenHours, oneDay, twoDays, oneWeek, oneMonth, oneYear", &expires,
+        "lang|l", "set the language of *all* files to the specified one", &overrideLang,
     );
 
     if (helpInfo.helpWanted)
@@ -21,6 +23,16 @@ void main(string[] args)
         defaultGetoptPrinter("pastry - create pastes from the commandline - https://paste.myst.rs/\n",
                 helpInfo.options);
         return;
+    }
+
+    if (overrideLang != "")
+    {
+        if (getLanguageByExtension(overrideLang).isNull)
+        {
+            // todo return error status code
+            writeln("language " ~ overrideLang ~ " doesnt exist");
+            return;
+        }
     }
 
     PastyCreateInfo[] pasties;
@@ -34,13 +46,20 @@ void main(string[] args)
 
         string lang;
 
-        if (ext.length > 1)
+        if (overrideLang == "")
         {
-            lang = getLanguageByExtension(ext[1..$]).get().name;
+            if (ext.length > 1)
+            {
+                lang = getLanguageByExtension(ext[1..$]).get().name;
+            }
+            else
+            {
+                lang = "plain text";
+            }
         }
         else
         {
-            lang = "plain text";
+            lang = overrideLang;
         }
 
         pasties ~= PastyCreateInfo(baseName(filePath), lang, contents);
