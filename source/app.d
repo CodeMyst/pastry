@@ -17,6 +17,7 @@ public void main(string[] args)
     ExpiresIn expires = ExpiresIn.never;
     string overrideLang = "";
     string token = "";
+    bool isPrivate = false;
 
     auto helpInfo = getopt(
         args,
@@ -26,7 +27,8 @@ public void main(string[] args)
         "lang|l", "set the language of *all* files to the specified one", &overrideLang,
         "set-token", "sets the token and saves it for future runs of the program. this way you can create private " ~
             "pastes and pastes that show on your pastemyst profile. you can get the token on your pastemyst " ~
-            "profile settings page. the token is saved in plaintext in $HOME/.config/pastry/config.yml", &token
+            "profile settings page. the token is saved in plaintext in $HOME/.config/pastry/config.yml", &token,
+        "private|p", "make a private paste, you have to set the token first", &isPrivate,
     );
 
     if (helpInfo.helpWanted)
@@ -54,6 +56,13 @@ public void main(string[] args)
             writeln("language " ~ overrideLang ~ " doesnt exist");
             return;
         }
+    }
+
+    if (isPrivate && token == "")
+    {
+        // todo: return error status code
+        writeln("cant create a private paste without setting the token. set the token with --set-token");
+        return;
     }
 
     PastyCreateInfo[] pasties;
@@ -86,7 +95,7 @@ public void main(string[] args)
         pasties ~= PastyCreateInfo(baseName(filePath), lang, contents);
     }
 
-    const createInfo = PasteCreateInfo(title, expires, false, false, "", pasties);
+    const createInfo = PasteCreateInfo(title, expires, isPrivate, false, "", pasties);
 
     const res = createPaste(createInfo, token);
 
