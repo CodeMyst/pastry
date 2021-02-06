@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"codemyst"
+	],
+	"copyright": "Copyright © 2021, CLI tool to create pastes on https://paste.myst.rs/ from files",
+	"dependencies": {
+		"pastemyst-d": "~>1.0.0"
+	},
+	"description": "CLI tool to create pastes on https://paste.myst.rs/ from files",
+	"license": "MIT",
+	"name": "pastry"
+}

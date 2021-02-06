@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/pastry
+pastry.so
+pastry.dylib
+pastry.dll
+pastry.a
+pastry.lib
+pastry-test-*
+*.exe
+*.o
+*.obj
+*.lst
