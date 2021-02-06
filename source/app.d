@@ -7,10 +7,13 @@ import pastemyst;
 void main(string[] args)
 {
     string title = "";
+    ExpiresIn expires = ExpiresIn.never;
 
     auto helpInfo = getopt(
         args,
-        "title|t", "title of the paste", &title
+        "title|t", "title of the paste", &title,
+        "expires|e","when the paste expires, possible options: " ~
+            "never, oneHour, twoHours, tenHours, oneDay, twoDays, oneWeek, oneMonth, oneYear", &expires
     );
 
     if (helpInfo.helpWanted)
@@ -43,7 +46,7 @@ void main(string[] args)
         pasties ~= PastyCreateInfo(baseName(filePath), lang, contents);
     }
 
-    const createInfo = PasteCreateInfo(title, ExpiresIn.never, false, false, "", pasties);
+    const createInfo = PasteCreateInfo(title, expires, false, false, "", pasties);
 
     const res = createPaste(createInfo);
 
