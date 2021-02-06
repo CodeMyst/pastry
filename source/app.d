@@ -2,12 +2,13 @@ import std.stdio;
 import std.getopt;
 import std.file;
 import std.path;
+import std.typecons;
 import core.thread;
 import dyaml;
 import pastemyst;
 
 private string CONFIG_PATH = "~/.config/pastry/config.yml";
-private const string CONFIG_TEMPLATE = "token: \nno-ext: \n";
+private const string CONFIG_TEMPLATE = "token: \nno-ext: \ndefault-expires: \n";
 
 string title = "";
 ExpiresIn expires = ExpiresIn.never;
@@ -15,6 +16,7 @@ string overrideLang = "";
 string token = "";
 bool isPrivate = false;
 string noExt = "";
+ExpiresIn defaultExpires = ExpiresIn.never;
 
 PastyCreateInfo[] pasties;
 
@@ -32,6 +34,7 @@ public void main(string[] args)
             "never, oneHour, twoHours, tenHours, oneDay, twoDays, oneWeek, oneMonth, oneYear", &expires,
         "lang|l", "set the language of *all* files to the specified one", &overrideLang,
         "private|p", "make a private paste, you have to set the token first", &isPrivate,
+        "set-default-expires", "set the default expires in time", &defaultExpires,
         "set-token", "sets the token and saves it for future runs of the program. this way you can create private " ~
             "pastes and pastes that show on your pastemyst profile. you can get the token on your pastemyst " ~
             "profile settings page. the token is saved in plaintext in $HOME/.config/pastry/config.yml", &token,
@@ -48,6 +51,7 @@ public void main(string[] args)
     if (token != "")
     {
         yamlSet("token", token);
+        writeln("token set");
         return;
     }
     else
@@ -75,6 +79,7 @@ public void main(string[] args)
     if (noExt != "")
     {
         yamlSet("no-ext", noExt);
+        writeln("no extension language set");
         return;
     }
     else
@@ -84,6 +89,21 @@ public void main(string[] args)
         if (noExt == "")
         {
             noExt = "plain text";
+        }
+    }
+
+    if (defaultExpires != ExpiresIn.never)
+    {
+        yamlSet("default-expires", defaultExpires);
+        writeln("default expires set");
+        return;
+    }
+    else
+    {
+        const res = yamlGet("default-expires");
+        if (!valueToEnum!ExpiresIn(res).isNull)
+        {
+            defaultExpires = valueToEnum!ExpiresIn(res).get();
         }
     }
 
@@ -99,7 +119,14 @@ public void main(string[] args)
         }
     }
 
-    const createInfo = PasteCreateInfo(title, expires, isPrivate, false, "", pasties);
+    ExpiresIn actualExpires = ExpiresIn.never;
+
+    if (expires == ExpiresIn.never && defaultExpires != ExpiresIn.never)
+    {
+        actualExpires = defaultExpires;
+    }
+
+    const createInfo = PasteCreateInfo(title, actualExpires, isPrivate, false, "", pasties);
 
     const res = createPaste(createInfo, token);
 
@@ -209,8 +236,27 @@ private void printHelp(Option[] options)
     foreach (opt; options[0..$-1])
     {
         // writeln("    " ~ opt.optLong ~ ", " ~ opt.optShort ~ "\t\t" ~  opt.help);
-        writef("    %-20s %-3s %-s\n", opt.optLong, opt.optShort, opt.help);
+        writef("    %-25s %-3s %-s\n", opt.optLong, opt.optShort, opt.help);
     }
 
-    writef("    %-20s %-3s %-s\n", "--help", "-h", "displays this help screen");
+    writef("    %-25s %-3s %-s\n", "--help", "-h", "displays this help screen");
+}
+
+private Nullable!T valueToEnum(T, R)(R value) @safe
+{
+    T[R] lookup;
+
+    static foreach (member; __traits(allMembers, T))
+    {
+        lookup[cast(R) __traits(getMember, T, member)] = __traits(getMember, T, member);
+    }
+
+    if (value in lookup)
+    {
+        return (*(value in lookup)).nullable;
+    }
+    else
+    {
+        return Nullable!T.init;
+    }
 }
