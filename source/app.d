@@ -9,9 +9,18 @@ void main(string[] args)
     string filePath = args[1];
 
     string contents = readText(filePath);
-    string ext = extension(filePath)[1..$];
+    string ext = extension(filePath);
 
-    string lang = getLanguageByExtension(ext).get().name;
+    string lang;
+
+    if (ext.length > 1)
+    {
+        lang = getLanguageByExtension(ext[1..$]).get().name;
+    }
+    else
+    {
+        lang = "plain text";
+    }
 
     const pasty = PastyCreateInfo(baseName(filePath), lang, contents);
     const createInfo = PasteCreateInfo("", ExpiresIn.never, false, false, "", [pasty]);
