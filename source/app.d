@@ -31,18 +31,17 @@ public void main(string[] args)
         "expires|e","when the paste expires, possible options: " ~
             "never, oneHour, twoHours, tenHours, oneDay, twoDays, oneWeek, oneMonth, oneYear", &expires,
         "lang|l", "set the language of *all* files to the specified one", &overrideLang,
+        "private|p", "make a private paste, you have to set the token first", &isPrivate,
         "set-token", "sets the token and saves it for future runs of the program. this way you can create private " ~
             "pastes and pastes that show on your pastemyst profile. you can get the token on your pastemyst " ~
             "profile settings page. the token is saved in plaintext in $HOME/.config/pastry/config.yml", &token,
-        "private|p", "make a private paste, you have to set the token first", &isPrivate,
         "set-no-extension", "sets which lang to use when a file doesnt have an extension, you can provide any " ~
             "supported language or \"autodetect\"", &noExt
     );
 
     if (helpInfo.helpWanted)
     {
-        defaultGetoptPrinter("pastry - create pastes from the commandline - https://paste.myst.rs/\n",
-                helpInfo.options);
+        printHelp(helpInfo.options);
         return;
     }
 
@@ -193,4 +192,25 @@ private string yamlGet(string key)
     string res = root[key].as!string();
 
     return res == "null" ? "" : res;
+}
+
+private void printHelp(Option[] options)
+{
+    writeln("--------------------------------------------------------------------------------");
+    writeln("pastry - command line tool to paste files to https://paste.myst.rs/");
+    writeln("--------------------------------------------------------------------------------");
+
+    writeln();
+
+    writeln("usage:\n    pastry <list of files and/or directories> [options]\n");
+
+    writeln("options:");
+
+    foreach (opt; options[0..$-1])
+    {
+        // writeln("    " ~ opt.optLong ~ ", " ~ opt.optShort ~ "\t\t" ~  opt.help);
+        writef("    %-20s %-3s %-s\n", opt.optLong, opt.optShort, opt.help);
+    }
+
+    writef("    %-20s %-3s %-s\n", "--help", "-h", "displays this help screen");
 }
