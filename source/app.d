@@ -3,11 +3,13 @@ import std.getopt;
 import std.file;
 import std.path;
 import std.typecons;
+import std.process;
+import std.array;
 import core.thread;
 import dyaml;
 import pastemyst;
 
-private string CONFIG_PATH = "~/.config/pastry/config.yml";
+private string CONFIG_PATH;
 private const string CONFIG_TEMPLATE = "token: \nno-ext: \ndefault-expires: \n";
 
 string title = "";
@@ -22,10 +24,24 @@ PastyCreateInfo[] pasties;
 
 string[string] langCache;
 
-public void main(string[] args)
+private string getConfigPath()
 {
-    // todo: windows
-    CONFIG_PATH = expandTilde(CONFIG_PATH);
+    string basepath;
+    version (Windows)
+    {
+        basepath = environment.get("APPDATA");
+    }
+    else
+    {
+        basepath = environment.get("HOME");
+    }
+
+    return chainPath(basepath, "pastry/config.yml").array;
+}
+
+public int main(string[] args)
+{
+    CONFIG_PATH = getConfigPath();
 
     auto helpInfo = getopt(
         args,
@@ -45,14 +61,14 @@ public void main(string[] args)
     if (helpInfo.helpWanted)
     {
         printHelp(helpInfo.options);
-        return;
+        return 0;
     }
 
     if (token != "")
     {
         yamlSet("token", token);
         writeln("token set");
-        return;
+        return 0;
     }
     else
     {
@@ -63,24 +79,22 @@ public void main(string[] args)
     {
         if (getLanguageByExtension(overrideLang).isNull)
         {
-            // todo: return error status code
             writeln("language " ~ overrideLang ~ " doesnt exist");
-            return;
+            return -1;
         }
     }
 
     if (isPrivate && token == "")
     {
-        // todo: return error status code
         writeln("cant create a private paste without setting the token. set the token with --set-token");
-        return;
+        return -1;
     }
 
     if (noExt != "")
     {
         yamlSet("no-ext", noExt);
         writeln("no extension language set");
-        return;
+        return 0;
     }
     else
     {
@@ -96,7 +110,7 @@ public void main(string[] args)
     {
         yamlSet("default-expires", defaultExpires);
         writeln("default expires set");
-        return;
+        return 0;
     }
     else
     {
@@ -131,6 +145,7 @@ public void main(string[] args)
     const res = createPaste(createInfo, token);
 
     writeln("https://paste.myst.rs/" ~ res.id);
+    return 0;
 }
 
 private void uploadDir(string path)
