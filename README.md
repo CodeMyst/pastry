@@ -2,6 +2,12 @@
 
 CLI tool to create pastes on https://paste.myst.rs/ from files
 
+## download
+
+you can get the binaries from the [release page](https://github.com/CodeMyst/pastry/releases) or build it from source
+
+to build from source you will need dmd and dub, then just run `dub build`
+
 ## usage
 
 create paste from files
