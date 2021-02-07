@@ -1,6 +1,6 @@
 # pastry
 
-CLI tool to create pastes on https://paste.myst.rs/ from files
+command line tool to paste files to https://paste.myst.rs/
 
 ## download
 
