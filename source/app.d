@@ -33,7 +33,7 @@ private string getConfigPath()
     }
     else
     {
-        basepath = environment.get("HOME");
+        basepath = environment.get("HOME").chainPath(".config").array;
     }
 
     return chainPath(basepath, "pastry/config.yml").array;
