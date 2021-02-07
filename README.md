@@ -8,8 +8,6 @@ you can get the binaries from the [release page](https://github.com/CodeMyst/pas
 
 there is an arch package in the aur: [pastry-aur](https://aur.archlinux.org/packages/pastry/)
 
-soon there will be packages for ubuntu and windows
-
 to build from source you will need dmd and dub, then just run `dub build`
 
 ## usage
