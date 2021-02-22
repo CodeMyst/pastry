@@ -69,3 +69,11 @@ pastry --set-token <YOUR_TOKEN>
 # create private paste
 pastry file1.txt -p
 ```
+
+## troubleshooting
+
+##### dll file not found
+
+if you get some error like `the code execution cannot proceed because x.dll was not found. reinstalling the program may fix this problem`, you are most likely missing a dll file that came with pastry-cli which it depends upon.
+
+if you have the dll file, provided that it is in the same directory as the executable, make sure that the name matches
