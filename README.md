@@ -19,7 +19,7 @@ to build from source you will need dmd and dub, then just run `dub build`
 
 this works completely fine and there's nothing wrong with it, however, for ease, you are recommended to add pastry to your `PATH` argument.
 
-you can do so by opening "edit environment variables" from contorl panel or the start menu:
+you can do so by opening "edit environment variables" from control panel or the start menu:
 
 ![edit env variables](images/edit_env-win.png)
 
