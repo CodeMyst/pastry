@@ -12,10 +12,9 @@ to build from source you will need dmd and dub, then just run `dub build`
 
 ### setting up on windows
 
-after downloading the cli tool for windows,
-1. 
-    * if there is a zip file, extract all the contents
-    * if there is a single executable, skip this step
+1. after downloading the cli tool for windows:
+   * if there is a zip file, extract all the contents
+   * if there is a single executable, skip this step
 2. to run pastry, open a terminal and run it in the same directory pastry is stored in
 
 this works completely fine and there's nothing wrong with it, however, for ease, you are recommended to add pastry to your `PATH` argument.
