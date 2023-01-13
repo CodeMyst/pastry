@@ -5,7 +5,7 @@
 	"copyright": "Copyright © 2021, CLI tool to create pastes on https://paste.myst.rs/ from files",
 	"dependencies": {
 		"dyaml": "~>0.8.3",
-		"pastemyst-d": "~>1.0.0"
+		"pastemyst-d": "~>1.1.0"
 	},
 	"description": "CLI tool to create pastes on https://paste.myst.rs/ from files",
 	"license": "MIT",

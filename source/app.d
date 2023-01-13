@@ -144,7 +144,7 @@ public int main(string[] args)
 
     const res = createPaste(createInfo, token);
 
-    writeln("https://paste.myst.rs/" ~ res.id);
+    writeln("https://paste.myst.rs/" ~ res.get().id);
     return 0;
 }
 
